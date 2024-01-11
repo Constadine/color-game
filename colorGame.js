@@ -7,7 +7,7 @@ let messageDisplay = document.querySelector("#message");
 let h1 = document.querySelector("h1");
 let resetButton = document.querySelector("#reset");
 let modeButtons = document.querySelectorAll(".mode")
-
+let hardcoreMode = false; // Variable to track whether Hardcore mode is active
 
 init();
 
@@ -23,33 +23,67 @@ function setUpModeButtons(){
           modeButtons[i].addEventListener("click", function(){
                modeButtons[0].classList.remove("selected");
                modeButtons[1].classList.remove("selected");
+               modeButtons[2].classList.remove("selected");
+               modeButtons[3].classList.remove("selected");
                this.classList.add("selected");
                // αντί για if και βλακείες.
-               this.textContent === "Easy" ? numSquares = 3: numSquares = 6;
+               switch (this.textContent) {
+                    case "Easy":
+                        numSquares = 3;
+                        break;
+                    case "Hard":
+                        numSquares = 6;
+                        break;
+                    case "Hardcore":
+                        numSquares = 6; // You can adjust the number of squares for Hardcore mode
+                        enableHardcoreMode();
+                        break;
+                    case "Hell":
+                         numSquares = 9; // You can adjust the number of squares for Hardcore mode
+                         enableHardcoreMode();
+                         break;
+               }
                reset();
           })
      }   
 }
 
-function setUpSquares(){
-     for(let i = 0; i < squares.length; i++) {
-          //add click listeners to squares
-          squares[i].addEventListener("click", function(){
-               //grab color of clicked square
+function enableHardcoreMode() {
+     // Add code specific to Hardcore mode here
+ }
+
+function setUpSquares() {
+     for (let i = 0; i < squares.length; i++) {
+          squares[i].addEventListener("click", function () {
                let clickedColor = this.style.backgroundColor;
-               //compare color to pickedcolor
-               if( clickedColor === pickedColor){
-                    messageDisplay.textContent = "Correct!"
-                    resetButton.textContent = "Play Again?"
+
+               if (clickedColor === pickedColor) {
+                    messageDisplay.textContent = "Correct!";
+                    resetButton.textContent = "Play Again?";
                     changeColors(clickedColor);
                     h1.style.backgroundColor = clickedColor;
                } else {
-                    this.style.backgroundColor = "#232323";
-                    messageDisplay.textContent = "Try Again"
+                    if (hardcoreMode) {
+                         // Player loses immediately in Hardcore mode
+                         messageDisplay.textContent = "You Lost! Correct Answer is Revealed.";
+                         resetButton.textContent = "Play Again?";
+                         changeColors(pickedColor);
+                         revealAnswer();
+                         reset();
+                    } else {
+                         // Player gets another chance in non-Hardcore mode
+                         this.style.backgroundColor = "#232323";
+                         messageDisplay.textContent = "Try Again";
+                    }
                }
           });
      }
 }
+   
+
+ function enableHardcoreMode() {
+     hardcoreMode = true;
+ }
 
 function reset(){
      //generate all new colors
