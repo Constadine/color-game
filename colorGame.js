@@ -1,4 +1,4 @@
-let numSquares = 6;
+let numSquares = 3;
 let colors = [];
 let pickedColor;
 let squares = document.querySelectorAll(".square")
@@ -7,7 +7,12 @@ let messageDisplay = document.querySelector("#message");
 let h1 = document.querySelector("h1");
 let resetButton = document.querySelector("#reset");
 let modeButtons = document.querySelectorAll(".mode")
+let bestStreakDisplay = document.getElementById("bestStreakCount");
 let hardcoreMode = false; // Variable to track whether Hardcore mode is active
+let streakCount = 0;
+let bestStreak = 0;
+let streakDisplay = document.getElementById("streakCount");
+let gameWon = false; // Add this variable to track whether the game is won
 
 init();
 
@@ -30,9 +35,16 @@ function setUpModeButtons(){
                switch (this.textContent) {
                     case "Easy":
                         numSquares = 3;
+                        if (hardcoreMode) {
+                         disableHardcoreMode()
+                        }
                         break;
+                        
                     case "Hard":
                         numSquares = 6;
+                        if (hardcoreMode) {
+                         disableHardcoreMode()
+                        }
                         break;
                     case "Hardcore":
                         numSquares = 6; // You can adjust the number of squares for Hardcore mode
@@ -48,42 +60,60 @@ function setUpModeButtons(){
      }   
 }
 
-function enableHardcoreMode() {
-     // Add code specific to Hardcore mode here
- }
-
 function setUpSquares() {
      for (let i = 0; i < squares.length; i++) {
-          squares[i].addEventListener("click", function () {
-               let clickedColor = this.style.backgroundColor;
+         squares[i].addEventListener("click", squareClickHandler);
+     }
+ }
 
-               if (clickedColor === pickedColor) {
-                    messageDisplay.textContent = "Correct!";
+ function squareClickHandler() {
+     if (!gameWon) {     
+
+          let clickedColor = this.style.backgroundColor;
+
+          if (clickedColor === pickedColor) {
+               changeColors(clickedColor);
+
+               resetButton.textContent = "Play Again?";
+               h1.style.backgroundColor = clickedColor;
+
+               // Increase streak count and update display
+               streakCount++;
+               messageDisplay.textContent = "Correct!"
+               streakDisplay.textContent = streakCount;
+               if (streakCount > bestStreak) {
+                    bestStreak = streakCount;
+                    bestStreakDisplay.textContent = bestStreak;
+                }
+    
+               disableSquareClicks();
+
+          } else {
+               if (hardcoreMode) {
+                    // Player loses immediately in Hardcore mode
+                    messageDisplay.textContent = "You Lost! Correct Answer was:";
+                    resetStreak();
                     resetButton.textContent = "Play Again?";
-                    changeColors(clickedColor);
-                    h1.style.backgroundColor = clickedColor;
+                    changeColors(pickedColor);
+                    disableSquareClicks()
                } else {
-                    if (hardcoreMode) {
-                         // Player loses immediately in Hardcore mode
-                         messageDisplay.textContent = "You Lost! Correct Answer is Revealed.";
-                         resetButton.textContent = "Play Again?";
-                         changeColors(pickedColor);
-                         revealAnswer();
-                         reset();
-                    } else {
-                         // Player gets another chance in non-Hardcore mode
-                         this.style.backgroundColor = "#232323";
-                         messageDisplay.textContent = "Try Again";
-                    }
+                    // Player gets another chance in non-Hardcore mode
+                    this.style.backgroundColor = "#232323";
+                    messageDisplay.textContent = "Try Again";
+                    resetStreak();
                }
-          });
+          }
      }
 }
-   
+ 
 
- function enableHardcoreMode() {
+function enableHardcoreMode() {
      hardcoreMode = true;
- }
+}
+
+function disableHardcoreMode() {
+     hardcoreMode = false;
+}
 
 function reset(){
      //generate all new colors
@@ -104,39 +134,12 @@ function reset(){
           }
      }
      h1.style.backgroundColor = "steelblue";
+     for (let i = 0; i < squares.length; i++) {
+          squares[i].addEventListener("click", squareClickHandler);
+      }
+
+     gameWon = false; 
 }
-
-// easyBtn.addEventListener("click", function(){
-//      hardBtn.classList.remove("selected");
-//      easyBtn.classList.add("selected");
-//      // δεν βαζω let, δεν δουλεύει σωστά
-//      numSquares = 3;
-//      colors = generateRandomColors(numSquares);
-//      pickedColor = pickColor();
-//      colorDisplay.textContent = pickedColor;
-//      for(let i = 0; i < squares.length; i++) {
-//           if(colors[i]){
-//                squares[i].style.backgroundColor = colors[i];
-//           } else { 
-//                squares[i].style.display = "none"
-//           }
-//      }
-
-// })
-
-// hardBtn.addEventListener("click", function(){
-//      hardBtn.classList.add("selected");
-//      easyBtn.classList.remove("selected");
-//      numSquares = 6;
-//      colors = generateRandomColors(numSquares);
-//      pickedColor = pickColor();
-//      colorDisplay.textContent = pickedColor;
-//      for(let i = 0; i < squares.length; i++) {
-//                squares[i].style.backgroundColor = colors[i];
-//                squares[i].style.display = "block"
-//           }
-// })
-
 
 resetButton.addEventListener("click", function(){
      reset()
@@ -179,3 +182,17 @@ function randomColor(){
      return `rgb(${r}, ${g}, ${b})`;
 
 }
+
+function resetStreak() {
+     streakCount = 0;
+     streakDisplay.textContent = streakCount;
+ }
+ 
+ function disableSquareClicks() {
+     for (let i = 0; i < squares.length; i++) {
+         squares[i].removeEventListener("click", squareClickHandler); // Remove the click event listener
+     }
+     gameWon = true;
+
+ }
+ 
